@@ -10,11 +10,13 @@ import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.*;
 import org.apache.nifi.processor.io.StreamCallback;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 
 public class TestProcessor extends AbstractProcessor {
 
@@ -58,27 +60,87 @@ public class TestProcessor extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) {
-        FlowFile flowFile = session.get();
-        if (flowFile == null) {
+        FlowFile flowFile1 = session.get();
+        if (flowFile1 == null) return;
+
+        FlowFile flowFile2 = session.get();
+        if (flowFile2 == null) {
+            session.transfer(flowFile1, Relationship.SELF);
             return;
         }
 
-        session.write(flowFile, new StreamCallback() {
-            @Override
-            public void process(InputStream in, OutputStream out) throws IOException {
-                // RUN CQL example program
-                CmdLineWrapper.main(new String[0]);
-                byte[] buffer = new byte[1024];
-                int len;
-                while ((len = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, len);
-                }
-                String myProperty = context.getProperty(MY_PROPERTY).evaluateAttributeExpressions(flowFile).getValue();
-                String msg = String.format("\n %s \n", myProperty);
-                out.write(msg.getBytes(StandardCharsets.UTF_8));
+
+        FlowFile flowFile3 = session.get();
+
+        if(flowFile3 == null) {
+            session.transfer(flowFile1, Relationship.SELF);
+            session.transfer(flowFile2, Relationship.SELF);
+            return;
+        }
+
+        // Read content
+        final StringBuilder content1 = new StringBuilder();
+        session.read(flowFile1, in -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                reader.lines().forEach(line -> content1.append(line).append("\n"));
             }
         });
 
-        session.transfer(flowFile, SUCCESS);
+        final StringBuilder content2 = new StringBuilder();
+        session.read(flowFile2, in -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                reader.lines().forEach(line -> content2.append(line).append("\n"));
+            }
+        });
+
+        final StringBuilder content3 = new StringBuilder();
+
+        session.read(flowFile3, in -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                reader.lines().forEach(line -> content3.append(line).append("\n"));
+            }
+        });
+
+        FlowFile resultFlowFile = session.create();
+        resultFlowFile = session.write(resultFlowFile, out -> {
+            String purchaseDataSource = content1.toString();
+            String webDataSource = content2.toString();
+            String demDataSource = content3.toString();
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp/cql/import/PurchaseCustomer.csv"))) {
+                writer.write(purchaseDataSource);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp/cql/import/WebCustomer.csv"))) {
+                writer.write(webDataSource);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp/cql/import/DemCustomer.csv"))) {
+                writer.write(demDataSource);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // RUN CQL example program
+            CmdLineWrapper.main(new String[0]);
+
+            try (BufferedReader reader = new BufferedReader(new FileReader("/tmp/cql/result/out/Customer.csv"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    out.write(line.getBytes(StandardCharsets.UTF_8));
+                    out.write("\n".getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        });
+        session.transfer(resultFlowFile, SUCCESS);
+
+        // Remove originals
+        session.remove(flowFile1);
+        session.remove(flowFile2);
+        session.remove(flowFile3);
     }
 }

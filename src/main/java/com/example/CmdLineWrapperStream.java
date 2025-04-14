@@ -9,6 +9,9 @@ import catdata.cql.exp.AqlParserFactory;
 import catdata.cql.exp.AqlTyping;
 import catdata.cql.exp.Exp;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class CmdLineWrapperStream {
 
 	public static void main(String[] args) {
@@ -59,11 +62,14 @@ public class CmdLineWrapperStream {
 		      		+ "\n"
 		      		+ "command exportCsvData = export_csv_instance I0 \"exported\"\n"
 		      		+ "command exportCsvData2 = export_csv_transform (identity I0) \"exported_trans.csv\"";
-		      Program<Exp<?>> program = AqlParserFactory.getParser().parseProgram(s);
+
+
+			  var str = Files.readString(Path.of("D:\\cql\\program.txt"));
+		      Program<Exp<?>> program = AqlParserFactory.getParser().parseProgram(str);
 		      AqlEnv env = new AqlEnv(program);
 		      env.typing = new AqlTyping(program, false);
 		      AqlMultiDriver d = new AqlMultiDriver(program, env);
-		      env.defaults.options.put(AqlOption.jdbc_default_class, "IO STREAM SHOUD BE PLACED HERE");
+		      //env.defaults.options.put(AqlOption.jdbc_default_class, "IO STREAM SHOUD BE PLACED HERE");
 		      d.start();
 		      
 		      String html = "";

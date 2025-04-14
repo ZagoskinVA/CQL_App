@@ -15,51 +15,68 @@ public class CmdLineWrapper {
 		 System.out.println("-------------------------------------------------------------");
          
 		 try {
-		      String s = "options\n"
-		      		+ "	always_reload = true\n"
-		      		+ "timeout=300000\n"
-		      		+ "\n"
-		      		+ "schema S0 = literal : sql {\n"
-		      		+ "	entities\n"
-		      		+ "		Employee\n"
-		      		+ "		Person\n"
-		      		+ "	foreign_keys\n"
-		      		+ "		eAsP : Employee -> Person\n"
-		      		+ "	attributes\n"
-		      		+ "		ssn : Person -> Integer\n"
-		      		+ "		eId : Employee -> Integer\n"
-		      		+ "		eSsn  : Employee -> Integer\n"
-		      		+ "	observation_equations\n"
-		      		+ "		eSsn = eAsP . ssn\n"
-		      		+ "}\n"
-		      		+ "\n"
-		      		+ "#  Person.csv is the file\n"
-		      		+ "#   pId\n"
-		      		+ "#   0\n"
-		      		+ "#   1\n"
-		      		+ "#   2\n"
-		      		+ "#\n"
-		      		+ "#   Employee.csv is the file\n"
-		      		+ "#    eId,is\n"
-		      		+ "#    10,0\n"
-		      		+ "#    11,1\n"
-		      		+ "#    12,2\n"
-		      		+ "\n"
-		      		+ "command createCsvData = exec_js {\n"
-		      		+ "	\"Java.type(\\\"catdata.Util\\\").writeFile(\\\"pId\\\\n0\\\\n1\\\\n2\\\", \\\"Person.csv\\\")\"\n"
-		      		+ "	\"Java.type(\\\"catdata.Util\\\").writeFile(\\\"eId,is\\\\n10,0\\\\n11,1\\\\n12,2\\\", \\\"Employee.csv\\\")\"\n"
-		      		+ "}\n"
-		      		+ "\n"
-		      		+ "instance I0 = import_csv \".\" : S0 {\n"
-		      		+ "	Employee -> {Employee -> eId   eAsP -> is    eSsn -> is}\n"
-		      		+ "	#eId -> eId can be ommitted\n"
-		      		+ "\n"
-		      		+ "	Person -> {Person -> pId  ssn -> pId}\n"
-		      		+ "}\n"
-		      		+ "\n"
-		      		+ "command exportCsvData = export_csv_instance I0 \"exported\"\n"
-		      		+ "command exportCsvData2 = export_csv_transform (identity I0) \"exported_trans.csv\"";
-		      Program<Exp<?>> program = AqlParserFactory.getParser().parseProgram(s);
+			  String code = """
+					  options
+					  	always_reload = true
+					  timeout=300000
+					  
+					  
+					  schema Customer = literal: sql {
+					  	entities\s
+					  		PurchaseCustomer
+					  		WebCustomer
+					  		DemCustomer
+					  	foreign_keys
+					  		customer_id: WebCustomer -> PurchaseCustomer
+					  		customer_id: PurchaseCustomer -> WebCustomer
+					  		customer_id: DemCustomer -> PurchaseCustomer
+					  	attributes
+					  		total_spent : PurchaseCustomer -> Integer
+					  		pages_visited : WebCustomer -> Integer
+					  		cart_abandon_rate : WebCustomer -> Integer
+					      		age : DemCustomer -> Integer
+					      		gender : DemCustomer -> String
+					  		customer_id : PurchaseCustomer -> Integer
+					  }
+					  
+					  
+					  
+					  instance CustomerInstance = import_csv "/tmp/cql/import" : Customer {
+					  	PurchaseCustomer -> { PurchaseCustomer -> customer_id  customer_id -> customer_id total_spent -> total_spent}\s
+					  	WebCustomer -> { WebCustomer -> customer_id customer_id -> customer_id pages_visited -> pages_visited cart_abandon_rate -> cart_abandon_rate }
+					  	DemCustomer -> { DemCustomer ->  customer_id  customer_id -> customer_id age -> age gender -> gender}
+					  }
+					  
+					  schema FullCustomerProfile = literal : sql {
+					    entities Customer
+					    attributes
+					      customer_id : Customer -> Integer
+					      total_spent : Customer -> Integer
+					      pages_visited : Customer -> Integer
+					      cart_abandon_rate : Customer -> Integer
+					      age : Customer -> Integer
+					      gender : Customer -> String
+					  }
+					  
+					  
+					  mapping CustomerToFullProfile = literal : FullCustomerProfile -> Customer {
+					  entity
+					  	Customer -> DemCustomer
+					  	attributes
+					  		customer_id -> customer_id.customer_id
+					  		total_spent -> customer_id.total_spent
+					  		pages_visited -> customer_id.customer_id.pages_visited
+					  		cart_abandon_rate -> customer_id.customer_id.cart_abandon_rate
+					  		age -> age
+					  		gender -> gender
+					  
+					  }
+					  
+					  
+					  instance FullProfile = delta CustomerToFullProfile CustomerInstance
+					  command exportCsvData3 = export_csv_instance FullProfile "/tmp/cql/result/out"
+					  """;
+		      Program<Exp<?>> program = AqlParserFactory.getParser().parseProgram(code);
 		      AqlEnv env = new AqlEnv(program);
 		      env.typing = new AqlTyping(program, false);
 		      AqlMultiDriver d = new AqlMultiDriver(program, env);
