@@ -69,7 +69,7 @@ public class CmdLineWrapperStream {
 		      AqlEnv env = new AqlEnv(program);
 		      env.typing = new AqlTyping(program, false);
 		      AqlMultiDriver d = new AqlMultiDriver(program, env);
-		      //env.defaults.options.put(AqlOption.jdbc_default_class, "IO STREAM SHOUD BE PLACED HERE");
+		      env.defaults.options.put(AqlOption.jdbc_default_class, "IO STREAM SHOUD BE PLACED HERE");
 		      d.start();
 		      
 		      String html = "";

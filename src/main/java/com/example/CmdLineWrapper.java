@@ -9,13 +9,20 @@ import catdata.cql.exp.AqlTyping;
 import catdata.cql.exp.Exp;
 import org.apache.nifi.components.PropertyDescriptor;
 
+import java.util.Arrays;
+
 public class CmdLineWrapper {
 
 	public static void main(String[] args) {
 		 System.out.println("-------------------------------------------------------------");
          
 		 try {
-			  String code = """
+			 var script = Arrays.stream(args).count() > 0 ? args[0] : null;
+
+			 System.out.println(String.format("Args count: %d\n", args.length));
+			 System.out.println(String.format("Script: %s\n", script));
+
+			  String code = script != null ? script : """
 					  options
 					  	always_reload = true
 					  timeout=300000
