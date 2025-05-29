@@ -1,0 +1,1606 @@
+{
+  "id": "acce16ed-8715-4d9a-ad86-6389b317674a",
+  "externalControllerServiceReferences": {},
+  "parameterContexts": {},
+  "parameterProviders": {},
+  "processGroups": [],
+  "remoteProcessGroups": [],
+  "processors": [
+    {
+      "identifier": "905ea68e-0196-1000-af31-61c787ded484",
+      "instanceIdentifier": "0f1a57e0-8d0b-3299-03c6-fae65a4d6171",
+      "name": "CQLQueryProcessor",
+      "comments": "",
+      "position": {
+        "x": -256,
+        "y": 392
+      },
+      "type": "org.example.CQLQueryProcessor",
+      "bundle": {
+        "group": "org.example",
+        "artifact": "CQLQueryProcessor",
+        "version": "2.0"
+      },
+      "properties": {
+        "DataSourceNames": "HybridProduct,RetailProduct,WholesaleProduct",
+        "CQLScript": "options\n\talways_reload = true\ntimeout=300000\n\nschema C = literal: sql {\n  entities\n    HybridProduct\n    RetailProduct\n    WholesaleProduct\n  foreign_keys\n    IsRetail: HybridProduct -> RetailProduct\n    IsWholesale: HybridProduct -> WholesaleProduct\n  attributes\n    nameHP: HybridProduct -> String\n    nameRP: RetailProduct -> String\n    nameWP: WholesaleProduct -> String\n}\n\nschema D = literal : sql {\n  entities\n    yHybridProduct\n    yRetailProduct\n    yWholesaleProduct\n    yProduct\n  foreign_keys\n    yIsRetail: yHybridProduct -> yRetailProduct\n    yIsWholesale: yHybridProduct -> yWholesaleProduct\n    yIsProductRP: yRetailProduct -> yProduct\n    yIsProductWP: yWholesaleProduct -> yProduct\n  path_equations\n    yHybridProduct.yIsRetail.yIsProductRP = yHybridProduct.yIsWholesale.yIsProductWP\n  attributes\n    ynameHP: yHybridProduct -> String\n    ynameRP: yRetailProduct -> String\n    ynameWP: yWholesaleProduct -> String\n}\n\nmapping F = literal : C -> D {\n  entity\n    HybridProduct -> yHybridProduct\n  foreign_keys\n    IsRetail -> yIsRetail\n    IsWholesale -> yIsWholesale\n  attributes\n    nameHP -> ynameHP\n\n  entity\n    RetailProduct -> yRetailProduct\n  attributes\n    nameRP -> ynameRP\n\n  entity\n    WholesaleProduct -> yWholesaleProduct\n  attributes\n    nameWP -> ynameWP\n}\n\ninstance I = import_csv \"/tmp/cql/import\" : C {\n\tHybridProduct -> { HybridProduct -> product_id  IsRetail -> retail_product_id IsWholesale -> wholesale_product_id nameHP -> product_name } \n\tRetailProduct -> { RetailProduct -> product_id nameRP -> product_name }\n\tWholesaleProduct -> { WholesaleProduct -> product_id nameWP -> product_name }\n}\n\n\ninstance J = sigma F I\n\ncommand exportCsvData3 = export_csv_instance J \"/tmp/cql/result/out\"",
+        "DataSourceCount": "3"
+      },
+      "propertyDescriptors": {
+        "DataSourceNames": {
+          "name": "DataSourceNames",
+          "displayName": "DataSourceNames",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "CQLScript": {
+          "name": "CQLScript",
+          "displayName": "CQLScript",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "DataSourceCount": {
+          "name": "DataSourceCount",
+          "displayName": "DataSourceCount",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "0 sec",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "9067315f-0196-1000-ed71-0b24295adc14",
+      "instanceIdentifier": "96c5737a-e8f9-3743-278f-488089bb9eca",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": -632,
+        "y": 144
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "product_id,retail_product_id,wholesale_product_id,product_name\n1,1,1,Premium Coffee\n2,2,2,Organic Tea",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6b76bd14-0196-1000-b913-48707fa60c54",
+      "instanceIdentifier": "1c5883e0-707a-3962-844f-13588db33db2",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": -488,
+        "y": -704
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "customer_id,pages_visited,cart_abandon_rate\n1001,12,2\n1002,13,3\n1003,14,4",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "91ee8561-0196-1000-6caf-ecc244532f1b",
+      "instanceIdentifier": "d5af57eb-6cd4-34f7-0319-34d54635d256",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": 1336,
+        "y": 400
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "id,order_id,product_name,customer_name\n1,1,Laptop,Bob\n2,2,Laptop,Alice\n3,3,Banana,Bob",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "91ee7a94-0196-1000-2746-900ad8ce42d1",
+      "instanceIdentifier": "f334e7b5-e6eb-3172-f8b8-2f51f1434958",
+      "name": "CQLQueryProcessor",
+      "comments": "",
+      "position": {
+        "x": 1304,
+        "y": 600
+      },
+      "type": "org.example.CQLQueryProcessor",
+      "bundle": {
+        "group": "org.example",
+        "artifact": "CQLQueryProcessor",
+        "version": "2.0"
+      },
+      "properties": {
+        "DataSourceNames": "SOrderRaw",
+        "CQLScript": "options\n\talways_reload = true\ntimeout=300000\n\ntypeside Ty = literal {\n  external_types\n    dom -> \"java.lang.Object\"\n  external_parsers\n    dom -> \"x => x\"\n}\n\nschema S = literal : Ty {\n  entities\n    SOrderRaw\n  attributes\n    SorderId : SOrderRaw -> dom\n    ScustName : SOrderRaw -> dom\n    SprodName : SOrderRaw -> dom\n}\n\nschema T = literal : Ty {\n  entities\n    TCustomer TProduct TOrder\n  attributes\n    TcustId : TCustomer -> dom\n    TcustName : TCustomer -> dom\n    TprodId : TProduct -> dom\n    TprodName : TProduct -> dom\n    TorderId : TOrder -> dom\n    TcustRef : TOrder -> dom\n    TprodRef : TOrder -> dom\n}\n\nschema ST = literal : Ty {\n  imports\n    S T\n}\n\nschema C = literal: Ty {\n\tentities\n\t\tCustomer Product\n\tattributes\n\t\tCustomerName: Customer -> dom\n\t\tProductName: Product -> dom\n}\n\nquery resultQuery = literal : ST -> C {\nentity Customer -> { \n\tfrom \n\t\ty : TCustomer\n\tattributes\n\t\tCustomerName -> TcustName(y)}\n\t\nentity Product -> { \n\tfrom \n\t\tx : TProduct\n\tattributes\n\t\tProductName -> TprodName(x)}\n}\n\nconstraints theEDs = literal : ST {\n  # Каждая запись о заказе предполагает существование покупателя и продукта\n  forall o:TOrder ->\n    exists c:TCustomer p:TProduct\n    where o.TcustRef = c.TcustId\n          o.TprodRef = p.TprodId\n\n  # Каждая запись из OrderRaw приводит к заказу, покупателю и продукту\n  forall r:SOrderRaw ->\n    exists o:TOrder c:TCustomer p:TProduct\n    where r.SorderId = o.TorderId\n          c.TcustName = r.ScustName\n          p.TprodName = r.SprodName\n          o.TcustRef = c.TcustId\n          o.TprodRef = p.TprodId\n\n  forall p1:TProduct p2:TProduct\n  \twhere TprodName(p1) = TprodName(p2) -> where p1 = p2\n\n  forall c1:TCustomer c2:TCustomer\n  \twhere TcustName(c1) = TcustName(c2) -> where c1 = c2\n}\n\n\ninstance I = import_csv \"/tmp/cql/import\" : ST {\n\tSOrderRaw -> { SorderId -> order_id SprodName -> product_name ScustName -> customer_name} \n}\n\n\ninstance J = chase theEDs I\ncommand Check = check theEDs J\ninstance K = eval resultQuery J\ncommand exportCsvData3 = export_csv_instance K \"/tmp/cql/result/out\"\n",
+        "DataSourceCount": "1"
+      },
+      "propertyDescriptors": {
+        "DataSourceNames": {
+          "name": "DataSourceNames",
+          "displayName": "DataSourceNames",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "CQLScript": {
+          "name": "CQLScript",
+          "displayName": "CQLScript",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "DataSourceCount": {
+          "name": "DataSourceCount",
+          "displayName": "DataSourceCount",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "0 sec",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6c0d14f2-0196-1000-2bec-e92bf0b5fad5",
+      "instanceIdentifier": "aadf9f00-28cd-3e80-412b-6e0604edc3a3",
+      "name": "CQLQueryProcessor",
+      "comments": "",
+      "position": {
+        "x": 320,
+        "y": -280
+      },
+      "type": "org.example.CQLQueryProcessor",
+      "bundle": {
+        "group": "org.example",
+        "artifact": "CQLQueryProcessor",
+        "version": "2.0"
+      },
+      "properties": {
+        "DataSourceNames": "DemCustomer,PurchaseCustomer",
+        "CQLScript": "options\n\talways_reload = true\ntimeout=300000\n\n\nschema Customer = literal: sql {\n\tentities \n\t\tPurchaseCustomer\n\t\tDemCustomer\n\tforeign_keys\n\t\tcustomer_id: DemCustomer -> PurchaseCustomer\n\tattributes\n\t\ttotal_spent : PurchaseCustomer -> Integer\n    \tage : DemCustomer -> Integer\n    \tgender : DemCustomer -> String\n\t\tcustomer_id : PurchaseCustomer -> Integer\n}\n\n\n\ninstance CustomerInstance = import_csv \"/tmp/cql/import\" : Customer {\n\tPurchaseCustomer -> { PurchaseCustomer -> customer_id  customer_id -> customer_id total_spent -> total_spent} \n\tDemCustomer -> { DemCustomer ->  customer_id  customer_id -> customer_id age -> age gender -> gender}\n}\n\nschema FullCustomerProfile = literal : sql {\n  entities Customer\n  attributes\n    customer_id : Customer -> Integer\n    total_spent : Customer -> Integer\n    age : Customer -> Integer\n    gender : Customer -> String\n}\n\n\nmapping CustomerToFullProfile = literal : FullCustomerProfile -> Customer {\nentity\n\tCustomer -> DemCustomer\n\tattributes\n\t\tcustomer_id -> customer_id.customer_id\n\t\ttotal_spent -> customer_id.total_spent\n\t\tage -> age\n\t\tgender -> gender\n\n}\n\n\ninstance FullProfile = delta CustomerToFullProfile CustomerInstance\ncommand exportCsvData3 = export_csv_instance FullProfile \"/tmp/cql/result/out\"",
+        "DataSourceCount": "2"
+      },
+      "propertyDescriptors": {
+        "DataSourceNames": {
+          "name": "DataSourceNames",
+          "displayName": "DataSourceNames",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "CQLScript": {
+          "name": "CQLScript",
+          "displayName": "CQLScript",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "DataSourceCount": {
+          "name": "DataSourceCount",
+          "displayName": "DataSourceCount",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "0 sec",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "906b5bf8-0196-1000-5637-8821ce891e1d",
+      "instanceIdentifier": "8111af3b-6111-3cd5-ffc0-2195c5b323aa",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": -248,
+        "y": 128
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "product_id,product_name\n1,Coffee 250\n2,Tea 100g\n3,Sugar 1kg",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6b76bd17-0196-1000-46c7-278391592b13",
+      "instanceIdentifier": "360ae49d-b7dc-3e20-f5ac-40e81d0cdfb2",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": 888,
+        "y": -568
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "customer_id,total_spent\n1001,401\n1002,4502\n1003,4503",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6b76bd15-0196-1000-02e2-391b95096969",
+      "instanceIdentifier": "68e4c28c-9138-3722-ddfe-d7b551e70bda",
+      "name": "CQLQueryProcessor",
+      "comments": "",
+      "position": {
+        "x": -1056,
+        "y": -360
+      },
+      "type": "org.example.CQLQueryProcessor",
+      "bundle": {
+        "group": "org.example",
+        "artifact": "CQLQueryProcessor",
+        "version": "2.0"
+      },
+      "properties": {
+        "DataSourceNames": "",
+        "CQLScript": "options\n\talways_reload = true\ntimeout=300000\n\n\nschema Customer = literal: sql {\n\tentities \n\t\tPurchaseCustomer\n\t\tWebCustomer\n\t\tDemCustomer\n\tforeign_keys\n\t\tcustomer_id: WebCustomer -> PurchaseCustomer\n\t\tcustomer_id: PurchaseCustomer -> WebCustomer\n\t\tcustomer_id: DemCustomer -> PurchaseCustomer\n\tattributes\n\t\ttotal_spent : PurchaseCustomer -> Integer\n\t\tpages_visited : WebCustomer -> Integer\n\t\tcart_abandon_rate : WebCustomer -> Integer\n    \t\tage : DemCustomer -> Integer\n    \t\tgender : DemCustomer -> String\n\t\tcustomer_id : PurchaseCustomer -> Integer\n}\n\n\n\ninstance CustomerInstance = import_csv \"/tmp/cql/import\" : Customer {\n\tPurchaseCustomer -> { PurchaseCustomer -> customer_id  customer_id -> customer_id total_spent -> total_spent} \n\tWebCustomer -> { WebCustomer -> customer_id customer_id -> customer_id pages_visited -> pages_visited cart_abandon_rate -> cart_abandon_rate }\n\tDemCustomer -> { DemCustomer ->  customer_id  customer_id -> customer_id age -> age gender -> gender}\n}\n\nschema FullCustomerProfile = literal : sql {\n  entities Customer\n  attributes\n    customer_id : Customer -> Integer\n    total_spent : Customer -> Integer\n    pages_visited : Customer -> Integer\n    cart_abandon_rate : Customer -> Integer\n    age : Customer -> Integer\n    gender : Customer -> String\n}\n\n\nmapping CustomerToFullProfile = literal : FullCustomerProfile -> Customer {\nentity\n\tCustomer -> DemCustomer\n\tattributes\n\t\tcustomer_id -> customer_id.customer_id\n\t\ttotal_spent -> customer_id.total_spent\n\t\tpages_visited -> customer_id.customer_id.pages_visited\n\t\tcart_abandon_rate -> customer_id.customer_id.cart_abandon_rate\n\t\tage -> age\n\t\tgender -> gender\n\n}\n\n\ninstance FullProfile = delta CustomerToFullProfile CustomerInstance\ncommand exportCsvData3 = export_csv_instance FullProfile \"/tmp/cql/result/out\"",
+        "DataSourceCount": "3вфцвфц"
+      },
+      "propertyDescriptors": {
+        "DataSourceNames": {
+          "name": "DataSourceNames",
+          "displayName": "DataSourceNames",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "CQLScript": {
+          "name": "CQLScript",
+          "displayName": "CQLScript",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "DataSourceCount": {
+          "name": "DataSourceCount",
+          "displayName": "DataSourceCount",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "0 sec",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "906bf503-0196-1000-611d-3d0a921d1219",
+      "instanceIdentifier": "0ec8af90-d29a-3fa2-393b-cf7dbdc03350",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": 120,
+        "y": 136
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "product_id,product_name\n1,Coffee 10kg\n2,Tea 5kg\n3,Sugar 25kg",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6c0fd9f6-0196-1000-1c36-3b5fe7764373",
+      "instanceIdentifier": "b9122af0-d7f0-3084-c47a-2fe0c9162ac9",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": -1456,
+        "y": -704
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "customer_id,age,gender,region \n1001,30,Male,New York \n1002,25,Female,Los Angeles\n1003,20,Male,Moscow",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6b76bd16-0196-1000-0e18-0e1d8cd94e80",
+      "instanceIdentifier": "390cc09e-ea47-367d-2a72-c407bb1476e4",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": 440,
+        "y": -568
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "customer_id,age,gender,region \n1001,30,Male,New York \n1002,25,Female,Los Angeles\n1003,20,Male,Moscow",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6c0fe3b0-0196-1000-7107-607f65a551e9",
+      "instanceIdentifier": "86bc64a9-3228-34af-ebea-4f29f6d27d6f",
+      "name": "GenerateFlowFile",
+      "comments": "",
+      "position": {
+        "x": -992,
+        "y": -688
+      },
+      "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+      "bundle": {
+        "group": "org.apache.nifi",
+        "artifact": "nifi-standard-nar",
+        "version": "2.3.0"
+      },
+      "properties": {
+        "character-set": "UTF-8",
+        "File Size": "0B",
+        "mime-type": null,
+        "generate-ff-custom-text": "customer_id,total_spent\n1001,401\n1002,4502\n1003,4503",
+        "Batch Size": "1",
+        "Unique FlowFiles": "false",
+        "Data Format": "Text"
+      },
+      "propertyDescriptors": {
+        "character-set": {
+          "name": "character-set",
+          "displayName": "Character Set",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "File Size": {
+          "name": "File Size",
+          "displayName": "File Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "mime-type": {
+          "name": "mime-type",
+          "displayName": "Mime Type",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "generate-ff-custom-text": {
+          "name": "generate-ff-custom-text",
+          "displayName": "Custom Text",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Batch Size": {
+          "name": "Batch Size",
+          "displayName": "Batch Size",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Unique FlowFiles": {
+          "name": "Unique FlowFiles",
+          "displayName": "Unique FlowFiles",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        },
+        "Data Format": {
+          "name": "Data Format",
+          "displayName": "Data Format",
+          "identifiesControllerService": false,
+          "sensitive": false,
+          "dynamic": false
+        }
+      },
+      "style": {},
+      "schedulingPeriod": "1 min",
+      "schedulingStrategy": "TIMER_DRIVEN",
+      "executionNode": "ALL",
+      "penaltyDuration": "30 sec",
+      "yieldDuration": "1 sec",
+      "bulletinLevel": "WARN",
+      "runDurationMillis": 0,
+      "concurrentlySchedulableTaskCount": 1,
+      "autoTerminatedRelationships": [],
+      "scheduledState": "ENABLED",
+      "retryCount": 10,
+      "retriedRelationships": [],
+      "backoffMechanism": "PENALIZE_FLOWFILE",
+      "maxBackoffPeriod": "10 mins",
+      "componentType": "PROCESSOR",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    }
+  ],
+  "inputPorts": [],
+  "outputPorts": [],
+  "connections": [
+    {
+      "identifier": "6b76bd1a-0196-1000-1013-efb2c8977c1e",
+      "instanceIdentifier": "2e396703-63fd-3266-46dc-4b85df6823e1",
+      "name": "",
+      "source": {
+        "id": "6b76bd15-0196-1000-02e2-391b95096969",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "68e4c28c-9138-3722-ddfe-d7b551e70bda"
+      },
+      "destination": {
+        "id": "6b76bd19-0196-1000-affd-900eb6456062",
+        "type": "FUNNEL",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "Funnel",
+        "comments": "",
+        "instanceIdentifier": "d7db5eb4-832e-39c7-9a52-c2bf959ac6b8"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "SUCCESS"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "3c2fa95f-8e3b-355a-9a0c-68edbed0544a",
+      "instanceIdentifier": "91eeab77-0196-1000-f54d-f8d6bdac3efb",
+      "name": "",
+      "source": {
+        "id": "91ee7a94-0196-1000-2746-900ad8ce42d1",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "f334e7b5-e6eb-3172-f8b8-2f51f1434958"
+      },
+      "destination": {
+        "id": "eaf10aa6-cbdc-3fd2-bbc2-9f4503d68627",
+        "type": "FUNNEL",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "Funnel",
+        "comments": "",
+        "instanceIdentifier": "91ee9b89-0196-1000-5da5-37b8d02e5970"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "SUCCESS"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "82b8d63c-f377-3d42-8830-b0e404c4d349",
+      "instanceIdentifier": "6c10431e-0196-1000-29a4-645ec259f482",
+      "name": "",
+      "source": {
+        "id": "6c0fe3b0-0196-1000-7107-607f65a551e9",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "86bc64a9-3228-34af-ebea-4f29f6d27d6f"
+      },
+      "destination": {
+        "id": "6b76bd15-0196-1000-02e2-391b95096969",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "68e4c28c-9138-3722-ddfe-d7b551e70bda"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "4f209578-2537-3d0d-b89f-9bf95c96529f",
+      "instanceIdentifier": "6c0e44d9-0196-1000-1369-d60e3f2cdb1c",
+      "name": "",
+      "source": {
+        "id": "6b76bd17-0196-1000-46c7-278391592b13",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "360ae49d-b7dc-3e20-f5ac-40e81d0cdfb2"
+      },
+      "destination": {
+        "id": "6c0d14f2-0196-1000-2bec-e92bf0b5fad5",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "aadf9f00-28cd-3e80-412b-6e0604edc3a3"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "07557f7d-094b-341b-b93c-788cc959ec99",
+      "instanceIdentifier": "95815c91-0196-1000-306a-5885b19896ee",
+      "name": "",
+      "source": {
+        "id": "906bf503-0196-1000-611d-3d0a921d1219",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "0ec8af90-d29a-3fa2-393b-cf7dbdc03350"
+      },
+      "destination": {
+        "id": "905ea68e-0196-1000-af31-61c787ded484",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "0f1a57e0-8d0b-3299-03c6-fae65a4d6171"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "1d182fc0-fbb5-3dc0-829a-0fb66dae26b5",
+      "instanceIdentifier": "6c0e4c6d-0196-1000-cbcb-cc2a6308a24c",
+      "name": "",
+      "source": {
+        "id": "6c0d14f2-0196-1000-2bec-e92bf0b5fad5",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "aadf9f00-28cd-3e80-412b-6e0604edc3a3"
+      },
+      "destination": {
+        "id": "b7e86e0a-86c2-389f-b054-d313cca871e7",
+        "type": "FUNNEL",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "Funnel",
+        "comments": "",
+        "instanceIdentifier": "6c0e1a01-0196-1000-eb8b-dc0676d7186c"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "SUCCESS"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "9d0860f8-f94a-3f8e-83d0-0b43259dd6a6",
+      "instanceIdentifier": "6c0e3c21-0196-1000-79dc-b3256483bb12",
+      "name": "",
+      "source": {
+        "id": "6b76bd16-0196-1000-0e18-0e1d8cd94e80",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "390cc09e-ea47-367d-2a72-c407bb1476e4"
+      },
+      "destination": {
+        "id": "6c0d14f2-0196-1000-2bec-e92bf0b5fad5",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "aadf9f00-28cd-3e80-412b-6e0604edc3a3"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "89c76037-a5a8-3972-bfc3-946c8f59b65d",
+      "instanceIdentifier": "6c103a2a-0196-1000-8905-20bb0fc88ff6",
+      "name": "",
+      "source": {
+        "id": "6c0fd9f6-0196-1000-1c36-3b5fe7764373",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "b9122af0-d7f0-3084-c47a-2fe0c9162ac9"
+      },
+      "destination": {
+        "id": "6b76bd15-0196-1000-02e2-391b95096969",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "68e4c28c-9138-3722-ddfe-d7b551e70bda"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "dca51023-1702-30c3-a4c9-8d625203ec7d",
+      "instanceIdentifier": "958155f7-0196-1000-4c40-3accbe049675",
+      "name": "",
+      "source": {
+        "id": "906b5bf8-0196-1000-5637-8821ce891e1d",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "8111af3b-6111-3cd5-ffc0-2195c5b323aa"
+      },
+      "destination": {
+        "id": "905ea68e-0196-1000-af31-61c787ded484",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "0f1a57e0-8d0b-3299-03c6-fae65a4d6171"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "4bc74feb-33b1-3f2e-8b86-d3058a38185a",
+      "instanceIdentifier": "6c104a8a-0196-1000-d57b-27d9e8a1954c",
+      "name": "",
+      "source": {
+        "id": "6b76bd14-0196-1000-b913-48707fa60c54",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "1c5883e0-707a-3962-844f-13588db33db2"
+      },
+      "destination": {
+        "id": "6b76bd15-0196-1000-02e2-391b95096969",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "68e4c28c-9138-3722-ddfe-d7b551e70bda"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "bb785594-927c-3474-985b-78426d3c35d8",
+      "instanceIdentifier": "95814fbc-0196-1000-eab1-ee98b88596ea",
+      "name": "",
+      "source": {
+        "id": "9067315f-0196-1000-ed71-0b24295adc14",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "96c5737a-e8f9-3743-278f-488089bb9eca"
+      },
+      "destination": {
+        "id": "905ea68e-0196-1000-af31-61c787ded484",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "0f1a57e0-8d0b-3299-03c6-fae65a4d6171"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "4b1a59c1-b131-3daf-a50b-f694daab66c8",
+      "instanceIdentifier": "906cb07c-0196-1000-abda-17f902f03d76",
+      "name": "",
+      "source": {
+        "id": "905ea68e-0196-1000-af31-61c787ded484",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "0f1a57e0-8d0b-3299-03c6-fae65a4d6171"
+      },
+      "destination": {
+        "id": "086a29ff-a9de-3c07-acfd-579d4252e7a5",
+        "type": "FUNNEL",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "Funnel",
+        "comments": "",
+        "instanceIdentifier": "906ca74d-0196-1000-063f-67356c383bf4"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "SUCCESS"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "030c02fe-2344-32a3-ba37-3e1aa7a646a9",
+      "instanceIdentifier": "91eea4f1-0196-1000-d07c-69c7c2bf276a",
+      "name": "",
+      "source": {
+        "id": "91ee8561-0196-1000-6caf-ecc244532f1b",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "GenerateFlowFile",
+        "comments": "",
+        "instanceIdentifier": "d5af57eb-6cd4-34f7-0319-34d54635d256"
+      },
+      "destination": {
+        "id": "91ee7a94-0196-1000-2746-900ad8ce42d1",
+        "type": "PROCESSOR",
+        "groupId": "7c3ef260-b563-3dbf-8f2e-817f434cf90a",
+        "name": "CQLQueryProcessor",
+        "comments": "",
+        "instanceIdentifier": "f334e7b5-e6eb-3172-f8b8-2f51f1434958"
+      },
+      "labelIndex": 0,
+      "zIndex": 0,
+      "selectedRelationships": [
+        "success"
+      ],
+      "backPressureObjectThreshold": 10000,
+      "backPressureDataSizeThreshold": "1 GB",
+      "flowFileExpiration": "0 sec",
+      "prioritizers": [],
+      "bends": [],
+      "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+      "partitioningAttribute": "",
+      "loadBalanceCompression": "DO_NOT_COMPRESS",
+      "componentType": "CONNECTION",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    }
+  ],
+  "labels": [],
+  "funnels": [
+    {
+      "identifier": "b7e86e0a-86c2-389f-b054-d313cca871e7",
+      "instanceIdentifier": "6c0e1a01-0196-1000-eb8b-dc0676d7186c",
+      "position": {
+        "x": 1120,
+        "y": -336
+      },
+      "componentType": "FUNNEL",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "6b76bd19-0196-1000-affd-900eb6456062",
+      "instanceIdentifier": "d7db5eb4-832e-39c7-9a52-c2bf959ac6b8",
+      "position": {
+        "x": -912,
+        "y": -128
+      },
+      "componentType": "FUNNEL",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "eaf10aa6-cbdc-3fd2-bbc2-9f4503d68627",
+      "instanceIdentifier": "91ee9b89-0196-1000-5da5-37b8d02e5970",
+      "position": {
+        "x": 1488,
+        "y": 800
+      },
+      "componentType": "FUNNEL",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    },
+    {
+      "identifier": "086a29ff-a9de-3c07-acfd-579d4252e7a5",
+      "instanceIdentifier": "906ca74d-0196-1000-063f-67356c383bf4",
+      "position": {
+        "x": -72,
+        "y": 728
+      },
+      "componentType": "FUNNEL",
+      "groupIdentifier": "7c3ef260-b563-3dbf-8f2e-817f434cf90a"
+    }
+  ]
+}
