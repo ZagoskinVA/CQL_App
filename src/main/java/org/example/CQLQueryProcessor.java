@@ -1,6 +1,8 @@
 package org.example;
 
 import com.example.CmdLineWrapper;
+import org.apache.nifi.annotation.documentation.CapabilityDescription;
+import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
@@ -20,10 +22,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-
+@Tags({"CQL", "Categorical"})
+@CapabilityDescription("Categorical Query Language(CQL) script processor")
 public class CQLQueryProcessor extends AbstractProcessor {
 
-    public static final Validator Test_validator = new Validator() {
+    public static final Validator EQUAL_FILE_NAME_AND_QUANTITY_VALIDATOR = new Validator() {
         public ValidationResult validate(String subject, String value, ValidationContext context) {
             int count = Integer.parseInt(context.getProperty(DataSourceCount).getValue());
             return (new ValidationResult.Builder()).subject(subject).input(value).valid(value != null && !value.isEmpty() && Arrays.stream(value.trim().split(",")).count() == count).explanation(subject + " should be equal DataSourceCount prop").build();
@@ -37,6 +40,7 @@ public class CQLQueryProcessor extends AbstractProcessor {
             .required(true)
             .addValidator(org.apache.nifi.processor.util.StandardValidators.NON_EMPTY_VALIDATOR)
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
             .build();
 
     public static final PropertyDescriptor DataSourceNames = new PropertyDescriptor
@@ -44,7 +48,7 @@ public class CQLQueryProcessor extends AbstractProcessor {
             .displayName("DataSourceNames")
             .description("The name of each input flow file; if there are several files, the names must be listed separated by commas")
             .required(true)
-            .addValidator(Test_validator)
+            .addValidator(EQUAL_FILE_NAME_AND_QUANTITY_VALIDATOR)
             .build();
 
 
@@ -138,8 +142,8 @@ public class CQLQueryProcessor extends AbstractProcessor {
             return;
         }
 
-        String inputPath = context.getProperty(InputPath).evaluateAttributeExpressions().getValue();
-        String outPutPath = context.getProperty(OutputPath).evaluateAttributeExpressions().getValue();
+        String inputPath = "/tmp/cql/import"; //context.getProperty(InputPath).evaluateAttributeExpressions().getValue();
+        String outPutPath = "/tmp/cql/result/out"; //context.getProperty(OutputPath).evaluateAttributeExpressions().getValue();
         List<String> fileNames = Arrays.stream(context.getProperty(DataSourceNames).evaluateAttributeExpressions().getValue().split(",")).toList();
         CreateDirs(inputPath);
         CreateDirs(outPutPath);
@@ -173,7 +177,7 @@ public class CQLQueryProcessor extends AbstractProcessor {
         var cqlScript = context.getProperty(CQLScript).evaluateAttributeExpressions().getValue();
         String[] args = new String[1];
         args[0] = cqlScript;
-        CmdLineWrapper.main(args);
+        CQLExecutor.Execute(cqlScript);
 
         var outputDir = Paths.get(outPutPath);
 
